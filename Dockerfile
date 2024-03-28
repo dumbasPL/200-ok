@@ -4,9 +4,14 @@ WORKDIR /app
 
 COPY go.mod main.go ./
 
-ARG TARGETOS TARGETARCH
+ARG TARGETOS TARGETARCH TARGETVARIANT
 
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags="-w -s" -o /app/200-ok
+RUN export GOOS="$TARGETOS"; \
+    export GOARCH="$TARGETARCH"; \
+    if [ -n TARGETVARIANT ] && [ "$TARGETARCH" = "arm" ]; then \
+      export GOARM="${TARGETVARIANT//v}"; \
+    fi; \
+    go build -ldflags="-w -s" -o /app/200-ok
 
 FROM scratch
 
